@@ -54,7 +54,13 @@ class SimpleBPETokenizer:
         输入: corpus = [[116, 104, 101, 32], [116, 104, 101]]
         输出: Counter({(116,104): 2, (104,101): 2, (101,32): 1})
         """
-        raise NotImplementedError("TODO 1: 实现 count_pairs")
+        pair_counts = Counter()
+
+        for seq in corpus:
+            for a,b in zip(seq[:],seq[1:]):
+                pair_counts[(a,b)] += 1
+        
+        return pair_counts
 
     # ------------------------------------------------------------------
     # TODO 2
@@ -69,7 +75,19 @@ class SimpleBPETokenizer:
 
         注意：替换后要跳过被合并的两个位置，不能重叠匹配。
         """
-        raise NotImplementedError("TODO 2: 实现 apply_merge")
+        result = []
+        i = 0
+        
+        while i < len(seq):
+            if i+1 < len(seq) and seq[i] == pair[0] and seq[i+1] == pair[1]:
+                # two term are show up togther, make then becaue same word
+                result.append(new_id)
+                i += 2
+            else:
+                result.append(seq[i])
+                i += 1
+        
+        return result
 
     # ------------------------------------------------------------------
     # TODO 3
@@ -91,7 +109,24 @@ class SimpleBPETokenizer:
             6. 用 apply_merge 把这个 pair 在整个 corpus 里替换掉
             7. next_id += 1
         """
-        raise NotImplementedError("TODO 3: 实现 _train_merges")
+        corpus = self._get_train_corpus()
+
+        next_id =self.BASE_VOCAB_SIZE
+        for _ in range(self.MERGE_COUNT):
+            if self.MERGE_COUNT + self.BASE_VOCAB_SIZE <= next_id:
+                break
+            pair_counts = self.count_pairs(corpus)
+            if not pair_counts:
+                break 
+            
+            # findout the most common pairs
+            best_pair = pair_counts.most_common(1)[0][0]
+            new_bytes = self.vocab[best_pair[0]] + self.vocab[best_pair[1]]
+            self.vocab[next_id] = new_bytes
+            self._bytes_to_id[new_bytes] = next_id
+            self.merges[best_pair] = next_id
+            corpus = [self.apply_merge(seq,best_pair,next_id) for seq in corpus]
+            next_id += 1
 
     # ------------------------------------------------------------------
     # TODO 4
@@ -103,7 +138,11 @@ class SimpleBPETokenizer:
         1. text.encode("utf-8") 得到字节序列，转成 List[int]（每字节一个 base token）
         2. 按 self.merges 的插入顺序依次调用 apply_merge
         """
-        raise NotImplementedError("TODO 4: 实现 encode")
+        ids = list(text.encode("utf-8"))
+        for pair,new_id in self.merges.items():
+            ids = self.apply_merge(ids,pair,new_id)
+        
+        return ids
 
     # ------------------------------------------------------------------
     # TODO 5
@@ -116,4 +155,5 @@ class SimpleBPETokenizer:
         2. b"".join(...) 拼接
         3. .decode("utf-8", errors="replace")
         """
-        raise NotImplementedError("TODO 5: 实现 decode")
+        raw_byte = b"".join(self.vocab[i] for i in ids)
+        return raw_byte.decode("utf-8",errors="replace")
