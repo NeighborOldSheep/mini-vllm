@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find . -maxdepth 3 -not -path '*/\\\\.*')",
+      "Bash(python -c \"import torch; print\\(torch.__version__\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c ' *)",
+      "Bash(cp embedding_lab.py embedding_lab_REF.py)",
+      "Bash(cp train_lab.py train_lab_REF.py)",
+      "Bash(python -)",
+      "Bash(python -m py_compile attention_lab.py)",
+      "Bash(cp attention_lab.py attention_lab_REF.py)",
+      "Bash(python -m py_compile attention_lab_REF.py)",
+      "Bash(python -m py_compile lab02_embedding/embedding_lab.py lab03_attention/attention_lab.py lab04_transformer/transformer_lab.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python test_transformer_lab.py)",
+      "Bash(cp /tmp/embedding_lab_orig.py lab02_embedding/embedding_lab.py)",
+      "Bash(cp /tmp/attention_lab_orig.py lab03_attention/attention_lab.py)",
+      "Bash(cp /tmp/transformer_lab_orig.py lab04_transformer/transformer_lab.py)",
+      "Bash(rm -f /tmp/embedding_lab_orig.py /tmp/attention_lab_orig.py /tmp/transformer_lab_orig.py)",
+      "Bash(cp lab01_tokenizer/tokenizer_lab.py /tmp/o1.py)",
+      "Bash(cp lab02_embedding/embedding_lab.py /tmp/o2.py)",
+      "Bash(cp lab02_embedding/train_lab.py /tmp/o2t.py)",
+      "Bash(cp lab03_attention/attention_lab.py /tmp/o3.py)",
+      "Bash(cp lab04_transformer/transformer_lab.py /tmp/o4.py)",
+      "Bash(python -m py_compile lab01_tokenizer/tokenizer_lab.py lab02_embedding/embedding_lab.py lab02_embedding/train_lab.py lab03_attention/attention_lab.py lab04_transformer/transformer_lab.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python capstone.py)",
+      "Bash(cp /tmp/o1.py lab01_tokenizer/tokenizer_lab.py)",
+      "Bash(cp /tmp/o2.py lab02_embedding/embedding_lab.py)",
+      "Bash(cp /tmp/o2t.py lab02_embedding/train_lab.py)",
+      "Bash(cp /tmp/o3.py lab03_attention/attention_lab.py)",
+      "Bash(cp /tmp/o4.py lab04_transformer/transformer_lab.py)"
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+每次生成对应phase的学习计划时在根目录创建该phase所需要的文件夹,文件夹名称就用phase_num和这个章节title所拼接作为文件夹名称 然后设计coding lab 目的是让我充分掌握该章节所需要理解的coding部分
