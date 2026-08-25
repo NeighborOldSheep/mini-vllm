@@ -7,7 +7,7 @@ Lab 02 附加练习: 训练循环（挖空版）
 
 import torch
 import torch.nn as nn
-from embedding_lab import Embedding
+from embedding_lab import Embedding,cosine_similarity
 
 
 # ------------------------------------------------------------------
@@ -25,8 +25,14 @@ def train_step(emb: Embedding, head: nn.Linear, x, y, optimizer, loss_fn) -> flo
       5. optimizer.step()
       6. return loss.item()
     """
-    raise NotImplementedError("TODO 4: 实现 train_step")
+    
+    logits = head(emb(x))
+    loss = loss_fn(logits,y)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
 
+    return loss.item()
 
 def build_toy_model(vocab_size: int = 256, d_model: int = 16):
     """已提供：构建一个极简 next-token 预测模型（Embedding + LM head）。"""
@@ -34,4 +40,5 @@ def build_toy_model(vocab_size: int = 256, d_model: int = 16):
     head = nn.Linear(d_model, vocab_size, bias=False)
     optimizer = torch.optim.Adam(list(emb.parameters()) + list(head.parameters()), lr=0.01)
     loss_fn = nn.CrossEntropyLoss()
+    
     return emb, head, optimizer, loss_fn
