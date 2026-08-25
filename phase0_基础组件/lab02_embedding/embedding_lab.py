@@ -34,7 +34,7 @@ class Embedding(nn.Module):
 
         操作本质：output[i] = self.weight[token_ids[i]]
         """
-        raise NotImplementedError("TODO 1: 实现 Embedding.forward")
+        return self.weight[token_ids]
 
 
 # ------------------------------------------------------------------
@@ -47,7 +47,12 @@ def cosine_similarity(a: Tensor, b: Tensor) -> float:
     公式：cos(θ) = (a·b) / (‖a‖ × ‖b‖)
     取值：[-1, 1]，越接近 1 越相似
     """
-    raise NotImplementedError("TODO 2: 实现 cosine_similarity")
+    a = a.flatten().float()
+    b = b.flatten().float()
+
+    return (
+        torch.dot(a,b) / (torch.norm(a) * torch.norm(b))
+    ).item()
 
 
 # ------------------------------------------------------------------
@@ -71,4 +76,12 @@ def most_similar(query_vec: Tensor, weight: Tensor, top_k: int = 3) -> Tensor:
            一次得到 [vocab_size] 的相似度向量
         3. torch.topk(sims, k=top_k) 取前 k 个
     """
-    raise NotImplementedError("TODO 3: 实现 most_similar（向量化，不许 for 循环）")
+    query_norm = torch.norm(query_vec)
+    weight_norm = torch.norm(weight,dim=1,keepdim=True)
+
+    query_normalization = query_vec / query_norm 
+    weight_normalization = weight / weight_norm
+
+    sim = weight_normalization @ query_normalization 
+
+    return torch.topk(sim,k=top_k).indices
