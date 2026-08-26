@@ -36,8 +36,8 @@ def scaled_dot_product_attention(
     # ------------------------------------------------------------
     # TODO 1: scores = Q·Kᵀ / √d_head
     # ------------------------------------------------------------
-    scores = None
-    raise NotImplementedError("TODO 1: 计算 scores = Q·Kᵀ / √d_head")
+    scores = Q @ K.transpose(-2,-1) / math.sqrt(d_head)
+    
 
     # ------------------------------------------------------------
     # TODO 2: 应用因果 mask（causal=True 时，token i 不能看到 j>i）
@@ -45,19 +45,19 @@ def scaled_dot_product_attention(
     #   2. scores = scores.masked_fill(mask, float("-inf"))
     # ------------------------------------------------------------
     if causal:
-        raise NotImplementedError("TODO 2: 应用因果 mask")
+        seq_len = Q.size(0)
+        mask = torch.triu(torch.ones(seq_len,seq_len),diagonal=1).bool()
+        scores = scores.masked_fill(mask,float('-inf'))
 
     # ------------------------------------------------------------
     # TODO 3: softmax 归一化（沿最后一维）
     # ------------------------------------------------------------
-    weights = None
-    raise NotImplementedError("TODO 3: weights = softmax(scores, dim=-1)")
+    weights = torch.softmax(scores,dim=-1)
 
     # ------------------------------------------------------------
     # TODO 4: 加权求和 output = weights · V
     # ------------------------------------------------------------
-    output = None
-    raise NotImplementedError("TODO 4: output = weights · V")
+    output = weights @ V
 
     return output, weights
 
@@ -91,16 +91,15 @@ class MultiHeadAttention(nn.Module):
 
         # ------------------------------------------------------------
         # TODO 6a: 投影为 Q、K、V（各自过 W_q / W_k / W_v）
-        # ------------------------------------------------------------
-        Q, K, V = None, None, None
-        raise NotImplementedError("TODO 6a: Q, K, V = self.W_q(x), self.W_k(x), self.W_v(x)")
+        # ------------------------------------- -----------------------
+        Q, K, V = self.W_q(x),self.W_k(x),self.W_v(x)
 
         # ------------------------------------------------------------
         # TODO 5: 实现 split_heads，并用它把 Q/K/V 切成多头
         #   [seq_len, d_model] → [seq_len, num_heads, d_head] → [num_heads, seq_len, d_head]
         # ------------------------------------------------------------
         def split_heads(t: Tensor) -> Tensor:
-            raise NotImplementedError("TODO 5: 实现 split_heads")
+            return t.view(seq_len,self.num_heads,self.d_head).transpose(0,1)
 
         Q, K, V = split_heads(Q), split_heads(K), split_heads(V)
         # 现在 shape: [num_heads, seq_len, d_head]
@@ -110,10 +109,12 @@ class MultiHeadAttention(nn.Module):
         #          再把 num_heads 个 [seq_len, d_head] 输出拼接回 [seq_len, d_model]
         # ------------------------------------------------------------
         outputs = []
-        raise NotImplementedError("TODO 6b: 遍历 num_heads，逐头计算注意力并收集输出")
+        for h in range(self.num_heads):
+            output_h,_ = scaled_dot_product_attention(Q[h],K[h],V[h],causal=True)
+            outputs.append(output_h)
         concat = torch.cat(outputs, dim=-1)  # [seq_len, d_model]
 
         # ------------------------------------------------------------
         # TODO 6c: 输出投影
         # ------------------------------------------------------------
-        raise NotImplementedError("TODO 6c: return self.W_o(concat)")
+        return self.W_o(concat)
