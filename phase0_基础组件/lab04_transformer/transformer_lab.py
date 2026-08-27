@@ -41,7 +41,9 @@ class RMSNorm(nn.Module):
         RMS(x) = sqrt(mean(x², dim=-1, keepdim=True) + eps)
         output = x / RMS(x) * weight
         """
-        raise NotImplementedError("TODO 1: 实现 RMSNorm.forward")
+        rms = x.pow(2).mean(-1,keepdim=True).add(self.eps).sqrt()
+
+        return x / rms * self.weight
 
 
 class MLP(nn.Module):
@@ -70,7 +72,8 @@ class MLP(nn.Module):
         up   = self.W_up(x)
         return self.W_down(gate * up)
         """
-        raise NotImplementedError("TODO 2: 实现 MLP.forward（SwiGLU）")
+
+        return self.W_down(self.act(self.W_gate(x)) * self.W_up(x))
 
 
 class TransformerDecoderLayer(nn.Module):
@@ -98,7 +101,10 @@ class TransformerDecoderLayer(nn.Module):
         x = x + self.mlp(self.norm2(x))    # MLP 子层，残差加回原始 x
         return x
         """
-        raise NotImplementedError("TODO 3: 实现 TransformerDecoderLayer.forward（Pre-Norm + 残差）")
+        x = x + self.attn(self.norm1(x))
+        x = x + self.mlp(self.norm2(x))
+
+        return x
 
 
 class TinyTransformer(nn.Module):
@@ -142,4 +148,10 @@ class TinyTransformer(nn.Module):
         logits = self.lm_head(x)
         return logits
         """
-        raise NotImplementedError("TODO 4: 实现 TinyTransformer.forward")
+        x = self.embed(token_ids)
+        for layer in self.layers:
+            x = layer(x)
+        x = self.norm(x)
+        logits = self.lm_head(x)
+        
+        return logits
